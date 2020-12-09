@@ -29,7 +29,7 @@ function getSearchPlace(searchTerm, location) {
     return postgrePool.query(
         'select * from place where lower(place_name) like lower($1) and city = $2 or lower(place_type) like lower($3)', 
         [searchTerm, location, searchTerm])
-        .then(result => result.rows[0]);
+        .then(result => result.rows);
 }
 
 function addPlace(place_name, city, state, place_type) {

@@ -19,6 +19,11 @@ function getPlaces() {
     .then(result => result.rows);
 }
 
+function getReviews(placeId) {
+    return postgrePool.query('select stars, review_comment from review where place_id = $1', [placeId])
+    .then(result => result.rows);
+}
+
 function getSearchPlace(searchTerm, location) {
     searchTerm = "%" + searchTerm + "%";
     return postgrePool.query(
@@ -37,4 +42,4 @@ function addReview(place_id, stars, review_comment){
         .then(x => x.rows);
 }
 
-module.exports = { getSearchPlace, addPlace, getPlaces, addReview }
+module.exports = { getSearchPlace, addPlace, getPlaces, addReview, getReviews }

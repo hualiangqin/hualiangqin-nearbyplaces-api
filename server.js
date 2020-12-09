@@ -21,6 +21,13 @@ app.get('/places', (req, res) => {
     .catch(e => res.status(500).json({error: 'Places could not be retrieved.'}));
 });
 
+app.get('/reviews/:placeId', (req, res) => {
+    let placeId = req.params.placeId;
+    db.getReviews(placeId)
+    .then(result => res.json(result))
+    .catch(e => res.status(500).json({error: `Reivews for place ${placeId} could not be retrieved.`}));
+});
+
 app.get('/search/:searchTerm/:location', (req, res) =>{
     let searchTerm = req.params.searchTerm;
     let location = req.params.location;

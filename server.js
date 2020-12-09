@@ -3,7 +3,7 @@ var cors = require('cors');
 const { res, req, response } = require('express'); 
 const bodyParser = require('body-parser');
 let data = require('./data');
-
+const db = require('./db');
 const app = express();
 const port = process.env.PORT || 3002;
 
@@ -16,30 +16,54 @@ app.get('/', (req, res) => {
 });
 
 app.get('/places', (req, res) => {
-    let places = data.places;
-    let metadata = places.map(x => {
-        return {id: x.id, name: x.name, city: x.city, state: x.state, type: x.type};
-    });
-    res.json(metadata);
+    db.getPlaces()
+    .then(result => res.json(result))
+    .catch(e => res.status(500).json({error: 'Places could not be retrieved.'}));
 });
 
 app.get('/search/:searchTerm/:location', (req, res) =>{
-    let searchTerm = request.params.searchTerm;
-    let location = request.params.location;
-
+    let searchTerm = req.params.searchTerm;
+    let location = req.params.location;
+    db.getSearchPlace(searchTerm, location)
+    .then(result => {
+        if (result){
+            res.json(result)
+        }else{
+            res.status(404).json({message: `place with ${searchTerm} in ${location} is not found`});
+        }
+    })
+    .catch(e => {
+        console.log(e);
+        res.status(500).json({ error: `An error happened on the server.` });
+    });
 });
 
 app.post('/place', (req, res) => {
-    let place = request.body;
-
-    response.json({message: 'The place is saved successfully'})
+    let place = req.body;
+    let place_name = place.place_name;
+    let city = place.city;
+    let state = place.state;
+    let place_type = place.place_type;
+    db.addPlace(place_name, city, state, place_type)
+    .then(x => res.json({message: 'The place is added successfully'}))
+    .catch(e => {
+        console.log(e);
+        res.status(500).json({ error: `An error happened on the server.` });
+    });
 });
 
 app.post('/review/:placeId', (req, res) => {
-    let placeId = request.params.placeId;
-    let review = request.body;
+    let placeId = req.params.placeId;
+    let review = req.body;
+    let stars = review.stars;
+    let review_comment = review.review_comment;
 
-    response.json({message: `The review for place=${placeId} succeeded.`});
+    db.addReview(placeId, stars, review_comment)
+    .then(x => res.json({message: `The review for place ${placeId} is added.`}))
+    .catch(e => {
+        console.log(e);
+        res.status(500).json({ error: `An error happened on the server.` });
+    });
 });
 
 app.listen(port, ()=> {
